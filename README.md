@@ -3,1879 +3,780 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
 <title>AAC 음성출력 도구</title>
 
 <style>
-
-/* =========================
-   기본 디자인
-========================= */
-
 body {
-    margin:0;
-    font-family:'Noto Sans KR',Arial,sans-serif;
-    background:#f0f2f5;
+    margin: 0;
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+    background: #f0f2f5;
 }
 
 .top {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:16px;
-    background:linear-gradient(90deg,#00c6ff,#0072ff);
-    box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .btn {
-    padding:12px 20px;
-    font-size:18px;
-    border-radius:12px;
-    border:none;
-    background:white;
-    color:#0072ff;
-    font-weight:bold;
-    cursor:pointer;
+    padding: 12px 20px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: none;
+    background: white;
+    color: #0072ff;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .btn.primary {
-    background:#0072ff;
-    color:white;
-    font-size:14px;
-    padding:6px 12px;
+    background: #0072ff;
+    color: white;
+    font-size: 14px;
+    padding: 6px 12px;
 }
 
 .yes-no {
-    display:flex;
-    gap:24px;
-    justify-content:center;
-    flex:1;
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex: 1;
 }
 
 .section {
-    background:white;
-    padding:20px;
-    margin:20px;
-    border-radius:16px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    background: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-
-/* =========================
-   이미지 배경판
-========================= */
-
 .gallery {
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:12px;
-    margin-top:12px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.slot-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.thumb,
+.slot {
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    touch-action: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .thumb {
-    width:100%;
-    padding-top:100%;
-    position:relative;
-    border-radius:12px;
-    overflow:hidden;
-    cursor:pointer;
-    transition:transform 0.15s;
-    border:2px solid #e0e0e0;
-
-    /* 스크롤 허용 */
-    touch-action:auto;
-
-    user-select:none;
-    -webkit-user-select:none;
-    -webkit-touch-callout:none;
-}
-
-.thumb img {
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    pointer-events:none;
-}
-
-
-/* =========================
-   배경판 삭제 버튼
-========================= */
-
-.gallery-del-btn {
-    position:absolute;
-    top:6px;
-    right:6px;
-    background:rgba(255,255,255,0.9);
-    color:#333;
-    border-radius:50%;
-    width:24px;
-    height:24px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:12px;
-    cursor:pointer;
-    border:1px solid #aaa;
-    z-index:10;
-}
-
-
-/* =========================
-   문장 구성판
-========================= */
-
-.slot-area {
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:flex-start;
-    margin-top:12px;
-    gap:12px;
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
 }
 
 .slot {
-    width:130px;
-    height:130px;
-    border:2px dashed #cfd9dc;
-    border-radius:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    overflow:hidden;
-    background:#f9f9f9;
-    transition:all 0.15s;
-
-    cursor:grab;
-
-    /* 스크롤 허용 */
-    touch-action:auto;
-
-    user-select:none;
-    -webkit-user-select:none;
-    -webkit-touch-callout:none;
+    width: 130px;
+    height: 130px;
+    border: 2px dashed #cfd9dc;
+    border-radius: 16px;
+    background: #f9f9f9;
+    cursor: grab;
 }
 
+.thumb img,
 .slot img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    border-radius:16px;
-    pointer-events:none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
 }
 
-
-/* =========================
-   문장 삭제 버튼
-========================= */
-
+.gallery-del-btn,
 .del-btn {
-    position:absolute;
-    top:6px;
-    right:6px;
-    background:white;
-    border-radius:50%;
-    padding:4px 6px;
-    font-size:12px;
-    cursor:pointer;
-    border:1px solid #aaa;
-    z-index:10;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid #aaa;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
 }
-
-
-/* =========================
-   앱 아이콘 흔들림 효과
-========================= */
 
 @keyframes appWiggle {
-
-    0% {
-        transform:rotate(-1.3deg);
-    }
-
-    50% {
-        transform:rotate(1.3deg);
-    }
-
-    100% {
-        transform:rotate(-1.3deg);
-    }
-
+    from { transform: rotate(-1.3deg); }
+    to { transform: rotate(1.3deg); }
 }
 
-
-/* 편집 모드 */
-
-.gallery.edit-mode .thumb:not(.drag-placeholder),
-
-.slot-area.edit-mode .slot:not(.drag-placeholder) {
-
-    animation:appWiggle 0.18s infinite alternate;
-
+.edit-mode > .card {
+    animation: appWiggle 0.18s infinite alternate;
 }
 
-
-/* 선택된 이미지 */
-
-.thumb.long-pressed,
-.slot.long-pressed {
-
-    outline:3px solid #ff9800;
-    outline-offset:2px;
-
+.card.long-pressed {
+    outline: 3px solid #ff9800;
+    outline-offset: 2px;
 }
 
-
-/* =========================
-   손가락을 따라가는 이미지
-========================= */
+.edit-mode > .drag-placeholder {
+    opacity: 0;
+    animation: none;
+}
 
 .drag-ghost {
-
-    position:fixed !important;
-
-    z-index:99999 !important;
-
-    pointer-events:none !important;
-
-    opacity:0.96;
-
-    transform:scale(1.08);
-
-    transform-origin:center;
-
-    box-shadow:0 8px 25px rgba(0,0,0,0.3);
-
-    border:3px solid #0072ff !important;
-
-    animation:none !important;
-
+    position: fixed;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0.96;
+    transform: scale(1.08);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border: 3px solid #0072ff;
 }
-
-
-/* 원래 이미지 자리 */
-
-.drag-placeholder {
-
-    visibility:hidden !important;
-
-    pointer-events:none !important;
-
-    animation:none !important;
-
-}
-
-
-/* =========================
-   중간 버튼
-========================= */
 
 .mid-buttons {
-    display:flex;
-    justify-content:center;
-    gap:20px;
-    margin:12px 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 12px 0;
 }
 
 .bottom-right {
-    position:fixed;
-    bottom:16px;
-    right:16px;
+    position: fixed;
+    z-index: 20;
+    bottom: 16px;
+    right: 16px;
 }
 
-
-/* =========================
-   모바일
-========================= */
-
-@media(max-width:600px) {
-
+@media (max-width: 600px) {
     .slot {
-        width:95px;
-        height:95px;
+        width: 95px;
+        height: 95px;
     }
 
     .section {
-        margin:10px;
-        padding:12px;
+        margin: 10px;
+        padding: 12px;
     }
 
     .gallery {
-        gap:6px;
+        gap: 6px;
     }
-
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .edit-mode > .card {
+        animation: none;
+    }
+}
 </style>
 </head>
 
-
 <body>
-
-
-<!-- 상단 버튼 -->
-
 <div class="top">
-
     <div class="yes-no">
-
-        <button class="btn" id="yesBtn">네</button>
-
-        <button class="btn" id="noBtn">아니요</button>
-
+        <button class="btn" id="yesBtn" type="button">네</button>
+        <button class="btn" id="noBtn" type="button">아니요</button>
     </div>
-
 </div>
-
-
-<!-- 문장 구성판 -->
 
 <div class="section">
-
     <h3>문장 구성</h3>
-
     <div class="slot-area" id="slots"></div>
-
 </div>
-
-
-<!-- 중간 버튼 -->
 
 <div class="mid-buttons">
-
-    <button class="btn" id="clearAll">전체삭제</button>
-
-    <button class="btn" id="readAgain">다시 읽기</button>
-
+    <button class="btn" id="clearAll" type="button">전체삭제</button>
+    <button class="btn" id="readAgain" type="button">다시 읽기</button>
 </div>
-
-
-<!-- 이미지 배경판 -->
 
 <div class="section">
-
     <h3>이미지 업로드</h3>
-
     <input id="imgInput" type="file" accept="image/*" multiple>
-
     <div class="gallery" id="gallery"></div>
-
 </div>
-
-
-<!-- HTML 저장 -->
 
 <div class="bottom-right">
-
-    <button class="btn primary" id="saveHtml">HTML 저장</button>
-
+    <button class="btn primary" id="saveHtml" type="button">HTML 저장</button>
 </div>
 
-
 <script>
+"use strict";
 
-/* ==================================
-   기본 변수
-================================== */
+const galleryElement = document.getElementById("gallery");
+const slotsElement = document.getElementById("slots");
+const imageInput = document.getElementById("imgInput");
+
+const DB_NAME = "aacImageDB";
+const STORE_NAME = "images";
+const DB_VERSION = 1;
+const GALLERY_ORDER_KEY = "aacImageDB_galleryOrder_v1";
+
+const LONG_PRESS_MS = 700;
+const SCROLL_THRESHOLD_PX = 12;
+const DRAG_THRESHOLD_PX = 8;
 
 let gallery = [];
-
 let slots = [];
+let databasePromise;
+let drag = null;
+let lastTouchAt = -Infinity;
+let suppressedClick = null;
 
-const gEl = document.getElementById("gallery");
-
-const sEl = document.getElementById("slots");
-
-const imgInput = document.getElementById("imgInput");
-
-const yesBtn = document.getElementById("yesBtn");
-
-const noBtn = document.getElementById("noBtn");
-
-const clearAllBtn = document.getElementById("clearAll");
-
-const readAgainBtn = document.getElementById("readAgain");
-
-const saveHtmlBtn = document.getElementById("saveHtml");
-
-let suppressGalleryClickUntil = 0;
-
-let lastTouchAt = 0;
-
-
-function createUniqueId() {
-
-    return Date.now() + "-" +
-        Math.random().toString(36).slice(2);
-
+function stopSpeech() {
+    window.speechSynthesis?.cancel();
 }
 
+function speak(text) {
+    if (!window.speechSynthesis || !text?.trim()) return;
 
-/* ==================================
-   음성 출력
-================================== */
-
-const speechQueue = [];
-
-let isSpeaking = false;
-
-const synth = window.speechSynthesis;
-
-
-function queueAndSpeak(text,onComplete=null) {
-
-    if (!synth || !text || !text.trim()) {
-
-        if(onComplete) onComplete();
-
-        return;
-    }
-
-    stopAllSpeech();
+    stopSpeech();
 
     const utterance = new SpeechSynthesisUtterance(text);
-
-    utterance.lang = 'ko-KR';
-
+    utterance.lang = "ko-KR";
     utterance.rate = 1.2;
-
-    utterance.onend = () => {
-
-        isSpeaking = false;
-
-        if(onComplete) onComplete();
-
-        processNextSpeech();
-
-    };
-
-    utterance.onerror = () => {
-
-        isSpeaking = false;
-
-        if(onComplete) onComplete();
-
-        processNextSpeech();
-
-    };
-
-    speechQueue.push(utterance);
-
-    if(!isSpeaking) {
-
-        processNextSpeech();
-
-    }
-
+    window.speechSynthesis.speak(utterance);
 }
 
+function openDatabase() {
+    if (!databasePromise) {
+        databasePromise = new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-function processNextSpeech() {
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, {
+                        keyPath: "id",
+                        autoIncrement: true
+                    });
+                }
+            };
 
-    if(!isSpeaking && speechQueue.length > 0) {
-
-        isSpeaking = true;
-
-        const next = speechQueue.shift();
-
-        synth.speak(next);
-
-    }
-
-}
-
-
-function stopAllSpeech() {
-
-    if(synth) synth.cancel();
-
-    speechQueue.length = 0;
-
-    isSpeaking = false;
-
-}
-
-
-/* ==================================
-   IndexedDB
-   기존 데이터베이스 유지
-================================== */
-
-let db;
-
-const DB_NAME = 'aacImageDB';
-
-const STORE_NAME = 'images';
-
-const DB_VERSION = 1;
-
-
-function openDB() {
-
-    return new Promise((resolve,reject)=>{
-
-        const request = indexedDB.open(DB_NAME,DB_VERSION);
-
-        request.onupgradeneeded = (event)=>{
-
-            db = event.target.result;
-
-            if(!db.objectStoreNames.contains(STORE_NAME)) {
-
-                db.createObjectStore(
-                    STORE_NAME,
-                    {keyPath:'id',autoIncrement:true}
-                );
-
-            }
-
-        };
-
-        request.onsuccess = (event)=>{
-
-            db = event.target.result;
-
-            resolve(db);
-
-        };
-
-        request.onerror = (event)=>{
-
-            reject(event.target.error);
-
-        };
-
-    });
-
-}
-
-
-/* ==================================
-   이미지 추가
-================================== */
-
-async function addImageToIndexedDB(dataURL,fileName) {
-
-    if(!db) await openDB();
-
-    return new Promise((resolve,reject)=>{
-
-        const transaction = db.transaction(
-            [STORE_NAME],
-            'readwrite'
-        );
-
-        const store = transaction.objectStore(STORE_NAME);
-
-        const request = store.add({
-
-            dataURL,
-
-            fileName
-
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        }).catch(error => {
+            databasePromise = null;
+            throw error;
         });
+    }
 
-        request.onsuccess = ()=>resolve();
-
-        request.onerror = (event)=>reject(event.target.error);
-
-    });
-
+    return databasePromise;
 }
 
+async function runImageTransaction(mode, operation) {
+    const db = await openDatabase();
 
-/* ==================================
-   이미지 순서 저장
-================================== */
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, mode);
+        const request = operation(transaction.objectStore(STORE_NAME));
 
-const GALLERY_ORDER_KEY = 'aacImageDB_galleryOrder_v1';
-
+        transaction.oncomplete = () => resolve(request.result);
+        transaction.onerror = () => reject(request.error || transaction.error);
+        transaction.onabort = () => reject(
+            transaction.error || new Error("이미지 저장 작업이 중단됐습니다.")
+        );
+    });
+}
 
 function saveGalleryOrder() {
-
     try {
-
-        const order = gallery.map(item=>item.id);
-
         localStorage.setItem(
             GALLERY_ORDER_KEY,
-            JSON.stringify(order)
+            JSON.stringify(gallery.map(item => item.id))
         );
-
-    } catch(error) {
-
-        console.error("이미지 순서 저장 실패",error);
-
+    } catch (error) {
+        console.error("이미지 순서 저장 실패", error);
     }
-
 }
 
-
 function sortGalleryBySavedOrder(items) {
-
     let savedOrder = [];
 
     try {
-
-        savedOrder = JSON.parse(
-            localStorage.getItem(GALLERY_ORDER_KEY) || "[]"
-        );
-
-        if(!Array.isArray(savedOrder)) {
-
-            savedOrder = [];
-
-        }
-
-    } catch(error) {
-
-        savedOrder = [];
-
+        const value = JSON.parse(localStorage.getItem(GALLERY_ORDER_KEY) || "[]");
+        if (Array.isArray(value)) savedOrder = value;
+    } catch (error) {
+        console.error("이미지 순서 불러오기 실패", error);
     }
 
-    const orderMap = new Map();
+    const position = new Map(savedOrder.map((id, index) => [String(id), index]));
 
-    savedOrder.forEach((id,index)=>{
-
-        orderMap.set(String(id),index);
-
+    return items.sort((first, second) => {
+        const firstPosition = position.get(String(first.id)) ?? Number.MAX_SAFE_INTEGER;
+        const secondPosition = position.get(String(second.id)) ?? Number.MAX_SAFE_INTEGER;
+        return firstPosition - secondPosition;
     });
-
-    return [...items].sort((a,b)=>{
-
-        const ai = orderMap.has(String(a.id))
-            ? orderMap.get(String(a.id))
-            : Infinity;
-
-        const bi = orderMap.has(String(b.id))
-            ? orderMap.get(String(b.id))
-            : Infinity;
-
-        return ai-bi;
-
-    });
-
 }
 
-
-/* ==================================
-   이미지 불러오기
-================================== */
-
-async function loadImagesFromIndexedDB() {
-
-    if(!db) await openDB();
-
-    return new Promise((resolve,reject)=>{
-
-        const transaction = db.transaction(
-            [STORE_NAME],
-            'readonly'
-        );
-
-        const store = transaction.objectStore(STORE_NAME);
-
-        const request = store.getAll();
-
-        request.onsuccess = (event)=>{
-
-            gallery = sortGalleryBySavedOrder(
-                event.target.result
-            );
-
-            saveGalleryOrder();
-
-            renderGallery();
-
-            resolve(gallery);
-
-        };
-
-        request.onerror = (event)=>{
-
-            reject(event.target.error);
-
-        };
-
-    });
-
-}
-
-
-/* ==================================
-   이미지 삭제
-================================== */
-
-async function deleteImageFromIndexedDB(id) {
-
-    if(!db) await openDB();
-
-    return new Promise((resolve,reject)=>{
-
-        const transaction = db.transaction(
-            [STORE_NAME],
-            'readwrite'
-        );
-
-        const store = transaction.objectStore(STORE_NAME);
-
-        const request = store.delete(id);
-
-        request.onsuccess = ()=>resolve();
-
-        request.onerror = (event)=>reject(event.target.error);
-
-    });
-
-}
-
-
-async function deleteGalleryItem(id) {
-
-    if(confirm("이 이미지를 갤러리에서 삭제하시겠습니까?")) {
-
-        await deleteImageFromIndexedDB(id);
-
-        await loadImagesFromIndexedDB();
-
-    }
-
-}
-
-
-/* ==================================
-   이미지 업로드
-================================== */
-
-imgInput.addEventListener("change",async e=>{
-
-    const files = [...e.target.files];
-
-    if(files.length===0) return;
-
-    for(const file of files) {
-
-        try {
-
-            const dataURL = await new Promise((resolve,reject)=>{
-
-                const reader = new FileReader();
-
-                reader.onload = ev=>resolve(ev.target.result);
-
-                reader.onerror = reject;
-
-                reader.readAsDataURL(file);
-
-            });
-
-            await addImageToIndexedDB(
-                dataURL,
-                file.name.replace(/\.[^/.]+$/,"")
-            );
-
-        } catch(error) {
-
-            console.error("이미지 업로드 실패",error);
-
-        }
-
-    }
-
-    e.target.value = '';
-
-    await loadImagesFromIndexedDB();
-
-});
-
-
-/* ==================================
-   이미지 배경판 출력
-================================== */
-
-function renderGallery() {
-
-    gEl.innerHTML = "";
-
-    gallery.forEach(item=>{
-
-        const d = document.createElement("div");
-
-        d.className = "thumb";
-
-        d.dataset.imageId = String(item.id);
-
-        d.innerHTML = `
-
-            <img src="${item.dataURL}">
-
-            <div class="gallery-del-btn">×</div>
-
-        `;
-
-
-        /* 이미지 선택 */
-
-        d.addEventListener("click",()=>{
-
-            if(Date.now()<suppressGalleryClickUntil) return;
-
-            slots.push({
-
-                id:createUniqueId(),
-
-                url:item.dataURL,
-
-                name:item.fileName
-
-            });
-
-            renderSlots();
-
-            queueAndSpeak(item.fileName);
-
-        });
-
-
-        /* 이미지 삭제 */
-
-        d.querySelector(".gallery-del-btn").onclick = e=>{
-
-            e.stopPropagation();
-
-            deleteGalleryItem(item.id);
-
-        };
-
-
-        gEl.appendChild(d);
-
-    });
-
-}
-
-
-/* ==================================
-   문장 구성판 출력
-================================== */
-
-function renderSlots() {
-
-    sEl.innerHTML = "";
-
-    slots.forEach((slotData,i)=>{
-
-        const slot = document.createElement("div");
-
-        slot.className = "slot";
-
-        slot.dataset.slotId = String(slotData.id);
-
-        slot.innerHTML = `
-
-            <img src="${slotData.url}">
-
-            <div class="del-btn">×</div>
-
-        `;
-
-
-        /* 삭제 */
-
-        slot.querySelector(".del-btn").onclick = e=>{
-
-            e.stopPropagation();
-
-            slots.splice(i,1);
-
-            renderSlots();
-
-        };
-
-
-        sEl.appendChild(slot);
-
-    });
-
-}
-
-
-/* ==========================================
-   공통 드래그 보조 함수
-========================================== */
-
-function createDragState(item,x,y,id,type) {
-
-    const state = {
-
-        item,
-
-        startX:x,
-
-        startY:y,
-
-        id,
-
-        type,
-
-        ready:false,
-
-        dragging:false,
-
-        cancelled:false,
-
-        timer:null,
-
-        ghost:null,
-
-        placeholder:null,
-
-        originalNextSibling:item.nextElementSibling,
-
-        offsetX:0,
-
-        offsetY:0
-
-    };
-
-
-    state.timer = setTimeout(()=>{
-
-        state.ready = true;
-
-        item.classList.add("long-pressed");
-
-        item.parentElement.classList.add("edit-mode");
-
-    },700);
-
-
-    return state;
-
-}
-
-
-/* ==========================================
-   드래그 시작
-========================================== */
-
-function beginVisualDrag(state) {
-
-    if(state.dragging) return;
-
-    state.dragging = true;
-
-    const rect = state.item.getBoundingClientRect();
-
-
-    /* 원래 위치 표시 */
-
-    const placeholder = state.item.cloneNode(false);
-
-    placeholder.className =
-
-        state.item.classList.contains("thumb")
-
-        ? "thumb drag-placeholder"
-
-        : "slot drag-placeholder";
-
-
-    state.item.replaceWith(placeholder);
-
-    state.placeholder = placeholder;
-
-
-    /* 손가락을 따라다니는 이미지 */
-
-    const ghost = state.item.cloneNode(true);
-
-    ghost.classList.remove("long-pressed");
-
-    ghost.classList.add("drag-ghost");
-
-
-    ghost.style.width = rect.width+"px";
-
-    ghost.style.height = rect.height+"px";
-
-    ghost.style.left = rect.left+"px";
-
-    ghost.style.top = rect.top+"px";
-
-    ghost.style.padding = "0";
-
-    ghost.style.margin = "0";
-
-    ghost.style.boxSizing = "border-box";
-
-
-    document.body.appendChild(ghost);
-
-    state.ghost = ghost;
-
-
-    state.offsetX = state.startX-rect.left;
-
-    state.offsetY = state.startY-rect.top;
-
-}
-
-
-/* ==========================================
-   드래그 중 이미지 위치 변경
-========================================== */
-
-function moveVisualDrag(state,x,y) {
-
-    if(!state.ready || state.cancelled) return;
-
-
-    const distance = Math.hypot(
-
-        x-state.startX,
-
-        y-state.startY
-
-    );
-
-
-    if(!state.dragging && distance<8) return;
-
-
-    if(!state.dragging) {
-
-        beginVisualDrag(state);
-
-    }
-
-
-    /* 손가락 따라가기 */
-
-    state.ghost.style.left =
-
-        (x-state.offsetX)+"px";
-
-    state.ghost.style.top =
-
-        (y-state.offsetY)+"px";
-
-
-    const container = state.item.parentElement ||
-
-        state.placeholder.parentElement;
-
-
-    if(!container) return;
-
-
-    /* 손가락 아래 대상 찾기 */
-
-    const hit = document.elementFromPoint(x,y);
-
-    let target = hit ? hit.closest(
-        container===gEl ? ".thumb" : ".slot"
-    ) : null;
-
-
-    if(
-
-        !target ||
-
-        target.parentElement!==container ||
-
-        target===state.placeholder
-
-    ) {
-
-        const selector = container===gEl
-
-            ? ".thumb"
-
-            : ".slot";
-
-
-        const candidates = [
-
-            ...container.querySelectorAll(selector)
-
-        ].filter(el=>el!==state.placeholder);
-
-
-        if(candidates.length===0) return;
-
-
-        let nearest = null;
-
-        let minDistance = Infinity;
-
-
-        candidates.forEach(el=>{
-
-            const r = el.getBoundingClientRect();
-
-            const cx = r.left+r.width/2;
-
-            const cy = r.top+r.height/2;
-
-
-            const d =
-
-                Math.pow(x-cx,2)+
-
-                Math.pow(y-cy,2);
-
-
-            if(d<minDistance) {
-
-                minDistance = d;
-
-                nearest = el;
-
-            }
-
-        });
-
-
-        target = nearest;
-
-    }
-
-
-    if(!target) return;
-
-
-    /* 삽입 위치 판단 */
-
-    const rect = target.getBoundingClientRect();
-
-    const centerX = rect.left+rect.width/2;
-
-    const centerY = rect.top+rect.height/2;
-
-
-    const sameRow =
-
-        Math.abs(y-centerY)<rect.height*0.45;
-
-
-    const insertBefore = sameRow
-
-        ? x<centerX
-
-        : y<centerY;
-
-
-    /* 한 칸씩 밀기 */
-
-    if(insertBefore) {
-
-        if(state.placeholder.nextElementSibling!==target) {
-
-            container.insertBefore(
-
-                state.placeholder,
-
-                target
-
-            );
-
-        }
-
-    } else {
-
-        if(target.nextElementSibling!==state.placeholder) {
-
-            container.insertBefore(
-
-                state.placeholder,
-
-                target.nextElementSibling
-
-            );
-
-        }
-
-    }
-
-}
-
-
-/* ==========================================
-   드래그 종료 및 정리
-========================================== */
-
-function finishVisualDrag(state,commit) {
-
-    if(!state) return;
-
-
-    clearTimeout(state.timer);
-
-
-    const container = state.item.parentElement ||
-
-        state.placeholder?.parentElement;
-
-
-    if(state.dragging && state.placeholder) {
-
-        /* 취소 시 원래 위치로 복귀 */
-
-        if(!commit) {
-
-            if(
-
-                state.originalNextSibling &&
-
-                state.originalNextSibling.parentNode===container
-
-            ) {
-
-                container.insertBefore(
-
-                    state.placeholder,
-
-                    state.originalNextSibling
-
-                );
-
-            } else {
-
-                container.appendChild(state.placeholder);
-
-            }
-
-        }
-
-
-        /* 원래 이미지 복구 */
-
-        state.placeholder.replaceWith(state.item);
-
-    }
-
-
-    if(state.ghost) {
-
-        state.ghost.remove();
-
-    }
-
-
-    state.item.classList.remove(
-
-        "long-pressed",
-
-        "dragging"
-
-    );
-
-
-    if(container) {
-
-        container.classList.remove("edit-mode");
-
-    }
-
-
-    /* 순서 저장 */
-
-    if(commit && state.dragging) {
-
-        if(container===gEl) {
-
-            syncGalleryOrderFromDOM();
-
-        } else if(container===sEl) {
-
-            syncSlotOrderFromDOM();
-
-        }
-
-    }
-
-
-    /* 터치 후 이미지 선택 방지 */
-
-    if(
-
-        container===gEl &&
-
-        (
-
-            state.ready ||
-
-            state.dragging ||
-
-            state.cancelled
-
-        )
-
-    ) {
-
-        suppressGalleryClickUntil=Date.now()+800;
-
-    }
-
-}
-
-
-/* ==========================================
-   모바일 터치 드래그
-   일반 스크롤은 허용
-========================================== */
-
-function enableTouchDrag(container,selector) {
-
-    let state = null;
-
-
-    /* 터치 시작 */
-
-    container.addEventListener("touchstart",e=>{
-
-        if(e.touches.length!==1) return;
-
-        if(e.target.closest(".gallery-del-btn,.del-btn")) {
-
-            return;
-
-        }
-
-
-        const item = e.target.closest(selector);
-
-        if(!item || item.parentElement!==container) return;
-
-        if(state) return;
-
-
-        const touch = e.changedTouches[0];
-
-
-        state = createDragState(
-
-            item,
-
-            touch.clientX,
-
-            touch.clientY,
-
-            touch.identifier,
-
-            "touch"
-
-        );
-
-    },{passive:true});
-
-
-    /* 손가락 이동 */
-
-    document.addEventListener("touchmove",e=>{
-
-        if(!state) return;
-
-
-        if(e.touches.length>1) {
-
-            finishVisualDrag(state,false);
-
-            state=null;
-
-            return;
-
-        }
-
-
-        const touch = [...e.changedTouches].find(
-
-            t=>t.identifier===state.id
-
-        );
-
-
-        if(!touch) return;
-
-
-        const distance = Math.hypot(
-
-            touch.clientX-state.startX,
-
-            touch.clientY-state.startY
-
-        );
-
-
-        /* 길게 누르기 전 움직이면 스크롤 */
-
-        if(!state.ready) {
-
-            if(distance>12) {
-
-                clearTimeout(state.timer);
-
-                state.cancelled=true;
-
-            }
-
-            return;
-
-        }
-
-
-        /* 길게 누른 뒤에는 드래그 */
-
-        e.preventDefault();
-
-
-        moveVisualDrag(
-
-            state,
-
-            touch.clientX,
-
-            touch.clientY
-
-        );
-
-    },{passive:false});
-
-
-    /* 손가락 놓기 */
-
-    document.addEventListener("touchend",e=>{
-
-        if(!state) return;
-
-
-        const touch = [...e.changedTouches].find(
-
-            t=>t.identifier===state.id
-
-        );
-
-
-        if(!touch) return;
-
-
-        finishVisualDrag(state,true);
-
-        state=null;
-
-        lastTouchAt=Date.now();
-
-    },{passive:true});
-
-
-    /* 터치 취소 */
-
-    document.addEventListener("touchcancel",e=>{
-
-        if(!state) return;
-
-
-        const touch = [...e.changedTouches].find(
-
-            t=>t.identifier===state.id
-
-        );
-
-
-        if(!touch) return;
-
-
-        finishVisualDrag(state,false);
-
-        state=null;
-
-        lastTouchAt=Date.now();
-
-    },{passive:true});
-
-
-    /* 길게 누르기 기본 메뉴 방지 */
-
-    container.addEventListener("contextmenu",e=>{
-
-        if(e.target.closest(selector)) {
-
-            e.preventDefault();
-
-        }
-
-    });
-
-}
-
-
-/* ==========================================
-   PC 마우스 드래그
-========================================== */
-
-function enableMouseDrag(container,selector) {
-
-    let state = null;
-
-
-    /* 마우스 누르기 */
-
-    container.addEventListener("mousedown",e=>{
-
-        /* 모바일의 가상 마우스 이벤트 무시 */
-
-        if(Date.now()-lastTouchAt<800) return;
-
-        if(e.button!==0) return;
-
-
-        if(e.target.closest(".gallery-del-btn,.del-btn")) {
-
-            return;
-
-        }
-
-
-        const item = e.target.closest(selector);
-
-        if(!item || item.parentElement!==container) return;
-
-        if(state) return;
-
-
-        state = createDragState(
-
-            item,
-
-            e.clientX,
-
-            e.clientY,
-
-            null,
-
-            "mouse"
-
-        );
-
-    });
-
-
-    /* 마우스 이동 */
-
-    document.addEventListener("mousemove",e=>{
-
-        if(!state) return;
-
-
-        const distance = Math.hypot(
-
-            e.clientX-state.startX,
-
-            e.clientY-state.startY
-
-        );
-
-
-        if(!state.ready) {
-
-            if(distance>12) {
-
-                clearTimeout(state.timer);
-
-                state.cancelled=true;
-
-            }
-
-            return;
-
-        }
-
-
-        e.preventDefault();
-
-
-        moveVisualDrag(
-
-            state,
-
-            e.clientX,
-
-            e.clientY
-
-        );
-
-    });
-
-
-    /* 마우스 놓기 */
-
-    document.addEventListener("mouseup",()=>{
-
-        if(!state) return;
-
-
-        finishVisualDrag(state,true);
-
-        state=null;
-
-    });
-
-}
-
-
-/* ==========================================
-   배경판 순서 동기화
-========================================== */
-
-function syncGalleryOrderFromDOM() {
-
-    const itemMap = new Map(
-
-        gallery.map(item=>[
-
-            String(item.id),
-
-            item
-
-        ])
-
-    );
-
-
-    gallery = [
-
-        ...gEl.querySelectorAll(".thumb")
-
-    ].map(el=>{
-
-        return itemMap.get(el.dataset.imageId);
-
-    }).filter(Boolean);
-
-
+async function loadGallery() {
+    const items = await runImageTransaction("readonly", store => store.getAll());
+    gallery = sortGalleryBySavedOrder(items);
     saveGalleryOrder();
-
+    renderGallery();
 }
 
-
-/* ==========================================
-   문장 구성판 순서 동기화
-========================================== */
-
-function syncSlotOrderFromDOM() {
-
-    const itemMap = new Map(
-
-        slots.map(item=>[
-
-            String(item.id),
-
-            item
-
-        ])
-
-    );
-
-
-    slots = [
-
-        ...sEl.querySelectorAll(".slot")
-
-    ].map(el=>{
-
-        return itemMap.get(el.dataset.slotId);
-
-    }).filter(Boolean);
-
-
-    renderSlots();
-
+function readImageFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
 }
 
-
-/* ==========================================
-   드래그 기능 활성화
-========================================== */
-
-
-/* 이미지 배경판 */
-
-enableTouchDrag(
-
-    gEl,
-
-    ".thumb"
-
-);
-
-enableMouseDrag(
-
-    gEl,
-
-    ".thumb"
-
-);
-
-
-/* 문장 구성판 */
-
-enableTouchDrag(
-
-    sEl,
-
-    ".slot"
-
-);
-
-enableMouseDrag(
-
-    sEl,
-
-    ".slot"
-
-);
-
-
-/* ==================================
-   네 / 아니요
-================================== */
-
-yesBtn.addEventListener("click",()=>{
-
-    queueAndSpeak("네");
-
-});
-
-
-noBtn.addEventListener("click",()=>{
-
-    queueAndSpeak("아니요");
-
-});
-
-
-/* ==================================
-   전체 삭제
-================================== */
-
-clearAllBtn.addEventListener("click",()=>{
-
-    slots.length=0;
-
-    renderSlots();
-
-    stopAllSpeech();
-
-});
-
-
-/* ==================================
-   다시 읽기
-================================== */
-
-readAgainBtn.addEventListener("click",()=>{
-
-    stopAllSpeech();
-
-
-    if(slots.length===0) {
-
-        queueAndSpeak("선택된 이미지가 없어요.");
-
-        return;
-
-    }
-
-
-    const allTexts = slots
-
-        .map(slot=>slot.name)
-
-        .join(" ");
-
-
-    queueAndSpeak(allTexts);
-
-});
-
-
-/* ==================================
-   HTML 저장
-================================== */
-
-saveHtmlBtn.addEventListener("click",()=>{
-
-    const htmlContent =
-
-        document.documentElement.outerHTML;
-
-
-    const blob = new Blob(
-
-        [htmlContent],
-
-        {type:"text/html"}
-
-    );
-
-
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-
-    a.href = url;
-
-    a.download = "aac_tool.html";
-
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    document.body.removeChild(a);
-
-
-    setTimeout(()=>{
-
-        URL.revokeObjectURL(url);
-
-    },1000);
-
-
-    queueAndSpeak("HTML을 저장했어요!");
-
-});
-
-
-/* ==================================
-   프로그램 시작
-================================== */
-
-document.addEventListener("DOMContentLoaded",async()=>{
+imageInput.addEventListener("change", async () => {
+    const files = Array.from(imageInput.files);
+    if (!files.length) return;
+
+    imageInput.disabled = true;
+    const failedFiles = [];
 
     try {
+        for (const file of files) {
+            try {
+                const dataURL = await readImageFile(file);
+                const fileName = file.name.replace(/\.[^/.]+$/, "");
 
-        await openDB();
+                await runImageTransaction("readwrite", store => {
+                    return store.add({ dataURL, fileName });
+                });
+            } catch (error) {
+                failedFiles.push(file.name);
+                console.error("이미지 업로드 실패", error);
+            }
+        }
 
-        await loadImagesFromIndexedDB();
+        await loadGallery();
 
-        console.log("AAC 프로그램 준비 완료");
-
-    } catch(error) {
-
-        console.error("초기화 실패",error);
-
-        alert("이미지 데이터베이스를 불러오지 못했습니다.");
-
+        if (failedFiles.length) {
+            alert("다음 이미지를 저장하지 못했습니다.\n" + failedFiles.join("\n"));
+        }
+    } catch (error) {
+        console.error("이미지 목록 갱신 실패", error);
+        alert("이미지 목록을 불러오지 못했습니다.");
+    } finally {
+        imageInput.value = "";
+        imageInput.disabled = false;
     }
-
 });
 
-</script>
+async function deleteGalleryItem(id) {
+    if (!confirm("이 이미지를 갤러리에서 삭제하시겠습니까?")) return;
 
+    try {
+        await runImageTransaction("readwrite", store => store.delete(id));
+        await loadGallery();
+    } catch (error) {
+        console.error("이미지 삭제 실패", error);
+        alert("이미지를 삭제하지 못했습니다.");
+    }
+}
+
+function createCard(className, id, url, name, deleteClass, onDelete) {
+    const card = document.createElement("div");
+    card.className = "card " + className;
+    card.dataset.cardId = String(id);
+
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = name;
+    image.draggable = false;
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = deleteClass;
+    deleteButton.textContent = "×";
+    deleteButton.setAttribute("aria-label", `${name} 삭제`);
+    deleteButton.addEventListener("click", event => {
+        event.stopPropagation();
+        onDelete();
+    });
+
+    card.append(image, deleteButton);
+    return card;
+}
+
+function renderGallery() {
+    if (drag?.container === galleryElement) finishDrag(false);
+
+    galleryElement.replaceChildren();
+
+    for (const item of gallery) {
+        const card = createCard(
+            "thumb",
+            item.id,
+            item.dataURL,
+            item.fileName,
+            "gallery-del-btn",
+            () => deleteGalleryItem(item.id)
+        );
+
+        card.addEventListener("click", () => {
+            if (
+                suppressedClick?.cardId === card.dataset.cardId &&
+                performance.now() < suppressedClick.until
+            ) return;
+
+            slots.push({
+                id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                url: item.dataURL,
+                name: item.fileName
+            });
+
+            renderSlots();
+            speak(item.fileName);
+        });
+
+        galleryElement.appendChild(card);
+    }
+}
+
+function renderSlots() {
+    if (drag?.container === slotsElement) finishDrag(false);
+
+    slotsElement.replaceChildren();
+
+    for (const item of slots) {
+        const card = createCard(
+            "slot",
+            item.id,
+            item.url,
+            item.name,
+            "del-btn",
+            () => {
+                slots = slots.filter(slot => slot.id !== item.id);
+                renderSlots();
+            }
+        );
+
+        slotsElement.appendChild(card);
+    }
+}
+
+function startPress(container, target, x, y, input, touchId) {
+    if (drag || target.closest("button")) return;
+
+    const card = target.closest(".card");
+    if (!card || card.parentElement !== container) return;
+
+    // 새로 누른 동작은 이전 드래그에서 발생한 클릭과 구분합니다.
+    suppressedClick = null;
+
+    const state = {
+        container,
+        card,
+        input,
+        touchId,
+        startX: x,
+        startY: y,
+        ready: false,
+        ghost: null,
+        cards: Array.from(container.children)
+    };
+
+    drag = state;
+
+    state.timer = setTimeout(() => {
+        if (drag !== state) return;
+
+        state.ready = true;
+        state.card.classList.add("long-pressed");
+        state.container.classList.add("edit-mode");
+    }, LONG_PRESS_MS);
+}
+
+function beginDrag(state) {
+    const rect = state.card.getBoundingClientRect();
+    const ghost = state.card.cloneNode(true);
+
+    ghost.classList.remove("long-pressed");
+    ghost.classList.add("drag-ghost");
+    ghost.removeAttribute("data-card-id");
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.querySelector("button")?.remove();
+
+    Object.assign(ghost.style, {
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        left: `${rect.left}px`,
+        top: `${rect.top}px`
+    });
+
+    document.body.appendChild(ghost);
+    state.ghost = ghost;
+    state.offsetX = state.startX - rect.left;
+    state.offsetY = state.startY - rect.top;
+
+    state.card.classList.add("drag-placeholder");
+
+    // 원본 카드를 옮기면 모바일에서 진행 중인 터치가 끊길 수 있습니다.
+    // 드래그 중에는 요소의 CSS order만 바꿉니다.
+    state.cards.forEach((card, index) => {
+        card.style.order = String(index);
+    });
+}
+
+function updateDrag(x, y, distance) {
+    const state = drag;
+
+    if (!state.ghost) {
+        if (distance < DRAG_THRESHOLD_PX) return;
+        beginDrag(state);
+    }
+
+    state.ghost.style.left = `${x - state.offsetX}px`;
+    state.ghost.style.top = `${y - state.offsetY}px`;
+
+    const bounds = state.container.getBoundingClientRect();
+    if (
+        x < bounds.left || x > bounds.right ||
+        y < bounds.top || y > bounds.bottom
+    ) return;
+
+    const hit = document.elementFromPoint(x, y)?.closest(".card");
+    if (hit === state.card) return;
+
+    let target = hit?.parentElement === state.container ? hit : null;
+
+    if (!target) {
+        let closestDistance = Infinity;
+
+        for (const card of state.cards) {
+            const rect = card.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const distanceToCard = Math.hypot(x - centerX, y - centerY);
+
+            if (distanceToCard < closestDistance) {
+                closestDistance = distanceToCard;
+                target = card;
+            }
+        }
+    }
+
+    if (!target || target === state.card) return;
+
+    // 손가락이 가리키는 칸으로 이동하고 사이의 카드를 한 칸씩 밀어냅니다.
+    const fromIndex = state.cards.indexOf(state.card);
+    const toIndex = state.cards.indexOf(target);
+
+    state.cards.splice(fromIndex, 1);
+    state.cards.splice(toIndex, 0, state.card);
+
+    state.cards.forEach((card, index) => {
+        card.style.order = String(index);
+    });
+}
+
+function finishDrag(commit) {
+    const state = drag;
+    if (!state) return;
+
+    drag = null;
+    clearTimeout(state.timer);
+
+    if (state.ready && state.container === galleryElement) {
+        suppressedClick = {
+            cardId: state.card.dataset.cardId,
+            until: performance.now() + 800
+        };
+    }
+
+    state.ghost?.remove();
+    state.card.classList.remove("long-pressed", "drag-placeholder");
+    state.container.classList.remove("edit-mode");
+
+    if (!state.ghost) return;
+
+    for (const card of state.cards) {
+        card.style.removeProperty("order");
+    }
+
+    if (!commit) return;
+
+    const isGallery = state.container === galleryElement;
+    const items = isGallery ? gallery : slots;
+    const itemsById = new Map(items.map(item => [String(item.id), item]));
+    const reorderedItems = state.cards.map(card => itemsById.get(card.dataset.cardId));
+
+    if (isGallery) {
+        gallery = reorderedItems;
+        saveGalleryOrder();
+        renderGallery();
+    } else {
+        slots = reorderedItems;
+        renderSlots();
+    }
+}
+
+for (const container of [galleryElement, slotsElement]) {
+    container.addEventListener("touchstart", event => {
+        lastTouchAt = performance.now();
+
+        if (event.touches.length !== 1) {
+            if (drag?.input === "touch") finishDrag(false);
+            return;
+        }
+
+        const touch = event.changedTouches[0];
+
+        startPress(
+            container,
+            event.target,
+            touch.clientX,
+            touch.clientY,
+            "touch",
+            touch.identifier
+        );
+    }, { passive: true });
+
+    container.addEventListener("mousedown", event => {
+        if (event.button !== 0 || performance.now() - lastTouchAt < 800) return;
+
+        startPress(container, event.target, event.clientX, event.clientY, "mouse");
+    });
+
+    container.addEventListener("contextmenu", event => {
+        if (event.target.closest(".card")) event.preventDefault();
+    });
+}
+
+document.addEventListener("touchmove", event => {
+    if (drag?.input !== "touch") return;
+
+    if (event.touches.length !== 1) {
+        finishDrag(false);
+        return;
+    }
+
+    const touch = Array.from(event.changedTouches).find(
+        item => item.identifier === drag.touchId
+    );
+    if (!touch) return;
+
+    const distance = Math.hypot(
+        touch.clientX - drag.startX,
+        touch.clientY - drag.startY
+    );
+
+    if (!drag.ready) {
+        if (distance > SCROLL_THRESHOLD_PX) finishDrag(false);
+        return;
+    }
+
+    // 길게 누르기가 끝난 뒤에만 브라우저의 스크롤을 막습니다.
+    if (!event.cancelable) {
+        finishDrag(false);
+        return;
+    }
+
+    event.preventDefault();
+    updateDrag(touch.clientX, touch.clientY, distance);
+}, { passive: false, capture: true });
+
+function endTouch(event, commit) {
+    lastTouchAt = performance.now();
+
+    if (drag?.input !== "touch") return;
+
+    const ended = Array.from(event.changedTouches).some(
+        touch => touch.identifier === drag.touchId
+    );
+
+    if (ended) finishDrag(commit);
+}
+
+document.addEventListener("touchend", event => endTouch(event, true));
+document.addEventListener("touchcancel", event => endTouch(event, false));
+
+document.addEventListener("mousemove", event => {
+    if (drag?.input !== "mouse") return;
+
+    const distance = Math.hypot(
+        event.clientX - drag.startX,
+        event.clientY - drag.startY
+    );
+
+    if (!drag.ready) {
+        if (distance > SCROLL_THRESHOLD_PX) finishDrag(false);
+        return;
+    }
+
+    event.preventDefault();
+    updateDrag(event.clientX, event.clientY, distance);
+});
+
+document.addEventListener("mouseup", event => {
+    if (event.button === 0 && drag?.input === "mouse") finishDrag(true);
+});
+
+window.addEventListener("blur", () => finishDrag(false));
+
+document.getElementById("yesBtn").addEventListener("click", () => speak("네"));
+document.getElementById("noBtn").addEventListener("click", () => speak("아니요"));
+
+document.getElementById("clearAll").addEventListener("click", () => {
+    slots = [];
+    renderSlots();
+    stopSpeech();
+});
+
+document.getElementById("readAgain").addEventListener("click", () => {
+    const sentence = slots.map(slot => slot.name).join(" ");
+    speak(sentence || "선택된 이미지가 없어요.");
+});
+
+document.getElementById("saveHtml").addEventListener("click", () => {
+    const copy = document.documentElement.cloneNode(true);
+
+    // 화면에 표시된 카드를 정리하고, 다시 열 때 IndexedDB에서 불러옵니다.
+    copy.querySelector("#gallery").replaceChildren();
+    copy.querySelector("#slots").replaceChildren();
+    copy.querySelector("#imgInput").removeAttribute("disabled");
+    copy.querySelectorAll(".edit-mode").forEach(element => {
+        element.classList.remove("edit-mode");
+    });
+    copy.querySelectorAll(".drag-ghost").forEach(element => element.remove());
+
+    const html = "<!DOCTYPE html>\n" + copy.outerHTML;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "aac_tool.html";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    speak("HTML을 저장했어요!");
+});
+
+loadGallery().catch(error => {
+    console.error("초기화 실패", error);
+    alert("이미지 데이터베이스를 불러오지 못했습니다.");
+});
+</script>
 </body>
 </html>
