@@ -12,15 +12,6 @@ body {
     background: #f0f2f5;
 }
 
-.top {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 16px;
-    background: linear-gradient(90deg, #00c6ff, #0072ff);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
 .btn {
     padding: 12px 20px;
     font-size: 18px;
@@ -40,10 +31,27 @@ body {
 }
 
 .yes-no {
-    display: flex;
-    gap: 24px;
-    justify-content: center;
-    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    max-width: 440px;
+    margin: 16px auto 0;
+}
+
+.yes-no .btn {
+    min-height: 64px;
+    padding: 12px 8px;
+    font-size: 24px;
+}
+
+#yesBtn {
+    background: #e6f6ed;
+    color: #15533a;
+}
+
+#noBtn {
+    background: #fff0ef;
+    color: #882c29;
 }
 
 .section {
@@ -52,6 +60,25 @@ body {
     margin: 20px;
     border-radius: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.btn.gallery-edit {
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #0072ff;
+    white-space: nowrap;
+}
+
+.gallery-edit[aria-pressed="true"] {
+    background: #0072ff;
+    color: white;
 }
 
 .gallery {
@@ -124,6 +151,10 @@ body {
     cursor: pointer;
 }
 
+.gallery:not(.show-delete-buttons) .gallery-del-btn {
+    display: none;
+}
+
 @keyframes appWiggle {
     from { transform: rotate(-1.3deg); }
     to { transform: rotate(1.3deg); }
@@ -192,16 +223,14 @@ body {
 </head>
 
 <body>
-<div class="top">
-    <div class="yes-no">
-        <button class="btn" id="yesBtn" type="button">네</button>
-        <button class="btn" id="noBtn" type="button">아니요</button>
-    </div>
-</div>
-
 <div class="section">
     <h3>문장 구성</h3>
     <div class="slot-area" id="slots"></div>
+
+    <div class="yes-no" role="group" aria-label="빠른 응답">
+        <button class="btn" id="yesBtn" type="button">네</button>
+        <button class="btn" id="noBtn" type="button">아니요</button>
+    </div>
 </div>
 
 <div class="mid-buttons">
@@ -210,7 +239,12 @@ body {
 </div>
 
 <div class="section">
-    <h3>이미지 업로드</h3>
+    <div class="gallery-heading">
+        <h3>이미지 업로드</h3>
+        <button class="btn gallery-edit" id="galleryEdit" type="button"
+                aria-controls="gallery" aria-pressed="false">편집</button>
+    </div>
+
     <input id="imgInput" type="file" accept="image/*" multiple>
     <div class="gallery" id="gallery"></div>
 </div>
@@ -225,6 +259,7 @@ body {
 const galleryElement = document.getElementById("gallery");
 const slotsElement = document.getElementById("slots");
 const imageInput = document.getElementById("imgInput");
+const galleryEditButton = document.getElementById("galleryEdit");
 
 const DB_NAME = "aacImageDB";
 const STORE_NAME = "images";
@@ -380,7 +415,19 @@ imageInput.addEventListener("change", async () => {
     }
 });
 
+function setGalleryEditing(board, button, editing) {
+    board.classList.toggle("show-delete-buttons", editing);
+    button.setAttribute("aria-pressed", String(editing));
+    button.textContent = editing ? "편집 완료" : "편집";
+}
+
+galleryEditButton.addEventListener("click", () => {
+    const editing = galleryEditButton.getAttribute("aria-pressed") === "true";
+    setGalleryEditing(galleryElement, galleryEditButton, !editing);
+});
+
 async function deleteGalleryItem(id) {
+    if (!galleryElement.classList.contains("show-delete-buttons")) return;
     if (!confirm("이 이미지를 갤러리에서 삭제하시겠습니까?")) return;
 
     try {
@@ -406,7 +453,7 @@ function createCard(className, id, url, name, deleteClass, onDelete) {
     deleteButton.type = "button";
     deleteButton.className = deleteClass;
     deleteButton.textContent = "×";
-    deleteButton.setAttribute("aria-label", `${name} 삭제`);
+    deleteButton.setAttribute("aria-label", name + " 삭제");
     deleteButton.addEventListener("click", event => {
         event.stopPropagation();
         onDelete();
@@ -418,17 +465,12 @@ function createCard(className, id, url, name, deleteClass, onDelete) {
 
 function renderGallery() {
     if (drag?.container === galleryElement) finishDrag(false);
-
     galleryElement.replaceChildren();
 
     for (const item of gallery) {
         const card = createCard(
-            "thumb",
-            item.id,
-            item.dataURL,
-            item.fileName,
-            "gallery-del-btn",
-            () => deleteGalleryItem(item.id)
+            "thumb", item.id, item.dataURL, item.fileName,
+            "gallery-del-btn", () => deleteGalleryItem(item.id)
         );
 
         card.addEventListener("click", () => {
@@ -438,7 +480,7 @@ function renderGallery() {
             ) return;
 
             slots.push({
-                id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                id: Date.now() + "-" + Math.random().toString(36).slice(2),
                 url: item.dataURL,
                 name: item.fileName
             });
@@ -453,16 +495,11 @@ function renderGallery() {
 
 function renderSlots() {
     if (drag?.container === slotsElement) finishDrag(false);
-
     slotsElement.replaceChildren();
 
     for (const item of slots) {
         const card = createCard(
-            "slot",
-            item.id,
-            item.url,
-            item.name,
-            "del-btn",
+            "slot", item.id, item.url, item.name, "del-btn",
             () => {
                 slots = slots.filter(slot => slot.id !== item.id);
                 renderSlots();
@@ -479,7 +516,6 @@ function startPress(container, target, x, y, input, touchId) {
     const card = target.closest(".card");
     if (!card || card.parentElement !== container) return;
 
-    // 새로 누른 동작은 이전 드래그에서 발생한 클릭과 구분합니다.
     suppressedClick = null;
 
     const state = {
@@ -516,21 +552,19 @@ function beginDrag(state) {
     ghost.querySelector("button")?.remove();
 
     Object.assign(ghost.style, {
-        width: `${rect.width}px`,
-        height: `${rect.height}px`,
-        left: `${rect.left}px`,
-        top: `${rect.top}px`
+        width: rect.width + "px",
+        height: rect.height + "px",
+        left: rect.left + "px",
+        top: rect.top + "px"
     });
 
     document.body.appendChild(ghost);
     state.ghost = ghost;
     state.offsetX = state.startX - rect.left;
     state.offsetY = state.startY - rect.top;
-
     state.card.classList.add("drag-placeholder");
 
-    // 원본 카드를 옮기면 모바일에서 진행 중인 터치가 끊길 수 있습니다.
-    // 드래그 중에는 요소의 CSS order만 바꿉니다.
+    // 터치가 이어지도록 드래그 중에는 표시 순서만 변경합니다.
     state.cards.forEach((card, index) => {
         card.style.order = String(index);
     });
@@ -544,8 +578,8 @@ function updateDrag(x, y, distance) {
         beginDrag(state);
     }
 
-    state.ghost.style.left = `${x - state.offsetX}px`;
-    state.ghost.style.top = `${y - state.offsetY}px`;
+    state.ghost.style.left = (x - state.offsetX) + "px";
+    state.ghost.style.top = (y - state.offsetY) + "px";
 
     const bounds = state.container.getBoundingClientRect();
     if (
@@ -576,7 +610,6 @@ function updateDrag(x, y, distance) {
 
     if (!target || target === state.card) return;
 
-    // 손가락이 가리키는 칸으로 이동하고 사이의 카드를 한 칸씩 밀어냅니다.
     const fromIndex = state.cards.indexOf(state.card);
     const toIndex = state.cards.indexOf(target);
 
@@ -605,7 +638,6 @@ function finishDrag(commit) {
     state.ghost?.remove();
     state.card.classList.remove("long-pressed", "drag-placeholder");
     state.container.classList.remove("edit-mode");
-
     if (!state.ghost) return;
 
     for (const card of state.cards) {
@@ -652,7 +684,6 @@ for (const container of [galleryElement, slotsElement]) {
 
     container.addEventListener("mousedown", event => {
         if (event.button !== 0 || performance.now() - lastTouchAt < 800) return;
-
         startPress(container, event.target, event.clientX, event.clientY, "mouse");
     });
 
@@ -684,7 +715,6 @@ document.addEventListener("touchmove", event => {
         return;
     }
 
-    // 길게 누르기가 끝난 뒤에만 브라우저의 스크롤을 막습니다.
     if (!event.cancelable) {
         finishDrag(false);
         return;
@@ -696,7 +726,6 @@ document.addEventListener("touchmove", event => {
 
 function endTouch(event, commit) {
     lastTouchAt = performance.now();
-
     if (drag?.input !== "touch") return;
 
     const ended = Array.from(event.changedTouches).some(
@@ -748,14 +777,17 @@ document.getElementById("readAgain").addEventListener("click", () => {
 
 document.getElementById("saveHtml").addEventListener("click", () => {
     const copy = document.documentElement.cloneNode(true);
+    const savedGallery = copy.querySelector("#gallery");
 
-    // 화면에 표시된 카드를 정리하고, 다시 열 때 IndexedDB에서 불러옵니다.
-    copy.querySelector("#gallery").replaceChildren();
+    savedGallery.replaceChildren();
+    setGalleryEditing(savedGallery, copy.querySelector("#galleryEdit"), false);
     copy.querySelector("#slots").replaceChildren();
     copy.querySelector("#imgInput").removeAttribute("disabled");
+
     copy.querySelectorAll(".edit-mode").forEach(element => {
         element.classList.remove("edit-mode");
     });
+
     copy.querySelectorAll(".drag-ghost").forEach(element => element.remove());
 
     const html = "<!DOCTYPE html>\n" + copy.outerHTML;
